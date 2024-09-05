@@ -1,4 +1,5 @@
 export type Timeline = {
+    title: string;
     events: TimelineEvents[]
     start: number
     end: number
@@ -10,7 +11,7 @@ export type TimelineEvents = {
     name: string
 }
 
-export function parseTimelines (spec: string): Timeline[] {
+export function parseTimelines(spec: string): Timeline[] {
     const inputSections = spec.split("\n\n")
 
     return inputSections.filter(x => x).map(parseTimeline)
@@ -18,9 +19,10 @@ export function parseTimelines (spec: string): Timeline[] {
 
 const timeSpecRegex = /\s*((\d+:)?\d{1,2}:)?\d{1,2}(\.\d+)?/gy
 
-function parseTimeline (spec: string): Timeline {
+function parseTimeline(spec: string): Timeline {
     const lines = spec.split("\n")
 
+    let title = ""
     const events: TimelineEvents[] = []
 
     let firstStart = Number.POSITIVE_INFINITY
@@ -31,6 +33,11 @@ function parseTimeline (spec: string): Timeline {
         const startMatch = timeSpecRegex.exec(line)
 
         if (!startMatch) {
+            // Consider the first line to be the title if it doesn't start with a time
+            if (events.length === 0) {
+                title = line
+            }
+
             continue
         }
 
@@ -60,6 +67,7 @@ function parseTimeline (spec: string): Timeline {
     }
 
     return {
+        title,
         events,
         start: firstStart,
         end: isFinite(lastEnd) ? lastEnd : firstStart
@@ -69,6 +77,6 @@ function parseTimeline (spec: string): Timeline {
 /*
  * Parse a string like 1:01.234 into a milliseconds value such as 61234
  */
-function parseTimeSpec (spec: string) {
+function parseTimeSpec(spec: string) {
     return spec.split(":").map(s => parseFloat(s)).reduce((sum, n, i, a) => sum + n * Math.pow(60, a.length - i - 1), 0) * 1000
 }

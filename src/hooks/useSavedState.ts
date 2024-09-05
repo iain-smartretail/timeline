@@ -7,7 +7,7 @@ export function useSavedState<T>(key: string, initialValue: T) {
         if (savedValue) {
             try {
                 return JSON.parse(savedValue);
-            } catch (e) {}
+            } catch (e) { }
         }
 
         return initialValue;
