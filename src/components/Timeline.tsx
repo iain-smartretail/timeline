@@ -64,6 +64,7 @@ export function Timeline({ timeline, maxValue = timeline.end, gridlines = 0, sty
                                     rx={CORNER_RADIUS}
                                     fill={`url(#linearGradient${i})`}
                                     stroke={deterministicColour(i, 100, 45)}
+                                    style={event.style}
                                 />
                                 <text x={event.end * TIME_SCALE + 4} y={y + EVENT_HEIGHT - 4}>{event.name}</text>
                             </Fragment>
@@ -78,7 +79,7 @@ export function Timeline({ timeline, maxValue = timeline.end, gridlines = 0, sty
                     const y = blockEventsHeight + i * 20;
                     return (
                         <Fragment key={i}>
-                            <path d={`M ${x} 0 V ${y} a ${h / 2} ${h / 2} 0 0 0 0 ${h} a ${h / 2} ${h / 2} 0 0 0 0 ${-h}`} fill="none" stroke="hsl(45deg 70% 50%)" />
+                            <path d={`M ${x} 0 V ${y} a ${h / 2} ${h / 2} 0 0 0 0 ${h} a ${h / 2} ${h / 2} 0 0 0 0 ${-h}`} fill="none" stroke="hsl(45deg 70% 50%)" style={event.style} />
                             <text x={x} y={y + 18}>{event.name}</text>
                         </Fragment>
                     )

@@ -1,3 +1,5 @@
+import { CSSProperties } from "react";
+
 export type Timeline = {
     title: string;
     events: TimelineEvents[]
@@ -9,6 +11,7 @@ export type TimelineEvents = {
     start: number
     end?: number
     name: string
+    style?: CSSProperties
 }
 
 export function parseTimelines(spec: string): Timeline[] {
@@ -18,6 +21,7 @@ export function parseTimelines(spec: string): Timeline[] {
 }
 
 const timeSpecRegex = /\s*((\d+:)?\d{1,2}:)?\d{1,2}(\.\d+)?/gy
+const styleRegex = /\[([^\]]+)\]/g
 
 function parseTimeline(spec: string): Timeline {
     const lines = spec.split("\n")
@@ -57,12 +61,20 @@ function parseTimeline(spec: string): Timeline {
             nameStart += endMatch[0].length
         }
 
-        const name = line.substring(nameStart).trim()
+        const name = line.substring(nameStart).replace(styleRegex, "").trim()
+
+        let style: any = {}
+
+        let styleMatch
+        while (styleMatch = styleRegex.exec(line)) {
+            style = { ...style, ...parseStyleValues(styleMatch[1]) }
+        }
 
         events.push({
             start,
             end,
-            name
+            name,
+            style: style as CSSProperties
         })
     }
 
@@ -79,4 +91,17 @@ function parseTimeline(spec: string): Timeline {
  */
 function parseTimeSpec(spec: string) {
     return spec.split(":").map(s => parseFloat(s)).reduce((sum, n, i, a) => sum + n * Math.pow(60, a.length - i - 1), 0) * 1000
+}
+
+function parseStyleValues(styleText: string): CSSProperties {
+    const styleValueRegex = /([a-z]+)\s*=\s*(?:"([^"]*)"|([^\s]*))/gi
+
+    let style: any = {}
+
+    let match
+    while (match = styleValueRegex.exec(styleText)) {
+        style[match[1]] = match[2] || match[3]
+    }
+
+    return style
 }
