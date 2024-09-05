@@ -1,0 +1,91 @@
+import { CSSProperties } from "react";
+import { Timeline as TimelineType } from "../timeline";
+
+export function Timeline ({ timeline, maxValue = timeline.end, style = {} }: { timeline: TimelineType, maxValue?: number, style?: CSSProperties}) {
+    const GUTTER_WIDTH = 20
+    const GUTTER_HEIGHT = 25
+
+    const EVENT_HEIGHT = 20
+    const EVENT_SPACING = 5
+
+    const CORNER_RADIUS = 2.5
+
+    const TIME_SCALE = 1280 / (2 * 60 * 1000)
+
+    const width = maxValue * TIME_SCALE
+    
+    const blockEvents = timeline.events.filter(e => e.end)
+    const singleEvents = timeline.events.filter(e => typeof e.end === "undefined")
+    
+    const eventCount = timeline.events.length
+
+    const height = eventCount * (EVENT_HEIGHT + EVENT_SPACING)
+
+    const blockEventsHeight = blockEvents.length * (EVENT_HEIGHT + EVENT_SPACING)
+
+    return (
+        <svg viewBox={`${-GUTTER_WIDTH} 0 ${width+GUTTER_WIDTH} ${height}`} style={{width, height, ...style}}>
+            <defs>
+                {
+                    blockEvents.map((_, i) => {
+                        const id = `linearGradient${i}`
+                        const baseColour = deterministicColour(i)
+                        const highlightColour = deterministicColour(i, 100, 80)
+
+                        return (
+                            <linearGradient key={id} id={id} x2={0} y2={1}>
+                                <stop offset={0} style={{stopColor: baseColour}} />
+                                <stop offset={0.75} style={{stopColor: highlightColour}} />
+                                <stop offset={1} style={{stopColor: baseColour}} />
+                            </linearGradient>
+                        )
+                    })
+                }
+            </defs>
+            <path d={`M -1 0 V ${blockEventsHeight} H ${width}`} fill="none" stroke="black" />
+            {
+                blockEvents.map((event, i) => {
+                    if (event.end){
+                        const y = i * (EVENT_HEIGHT + EVENT_SPACING);
+                        return (
+                            <>
+                                <rect 
+                                    key={i} 
+                                    x={event.start * TIME_SCALE} 
+                                    y={y} 
+                                    width={(event.end - event.start) * TIME_SCALE} 
+                                    height={EVENT_HEIGHT} 
+                                    rx={CORNER_RADIUS} 
+                                    fill={`url(#linearGradient${i})`}
+                                    stroke={deterministicColour(i, 100, 45)}
+                                />
+                                <text x={event.end * TIME_SCALE + 4} y={y + EVENT_HEIGHT - 4}>{event.name}</text>
+                            </>
+                        )
+                    }
+                })
+            }
+            {
+                [...singleEvents].reverse().map((event, i) => {
+                    const x = event.start * TIME_SCALE
+                    const h = 5
+                    const y = blockEventsHeight + i * 20;
+                    return (
+                        <>
+                            <path key={i} d={`M ${x} 0 V ${y} a ${h/2} ${h/2} 0 0 0 0 ${h} a ${h/2} ${h/2} 0 0 0 0 ${-h}`} fill="none" stroke="hsl(45deg 70% 50%)" />
+                            <text x={x} y={y+18}>{event.name}</text>
+                        </>
+                    )
+                })
+            }
+        </svg>
+    )
+}
+
+function deterministicColour (seed: number, saturation = 100, luminance = 50) {
+    const PRIME = 127
+
+    const angle = (seed * PRIME) % 360
+
+    return `hsl(${angle}deg ${saturation}% ${luminance}%)`
+}
