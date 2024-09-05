@@ -12,7 +12,7 @@ function App() {
     <>
       <textarea value={inputText} onChange={e => setInputText(e.target.value)} />
       {
-        timelines.map((timeline, i) => <Timeline key={i} timeline={timeline} maxValue={2 * 60 * 1000} style={{ margin: "1em 0" }} />)
+        timelines.map((timeline, i) => <Timeline key={i} timeline={timeline} maxValue={2 * 60 * 1000} gridlines={10 * 1000} style={{ margin: "1em 0" }} />)
       }
     </>
   )

@@ -1,7 +1,7 @@
 import { CSSProperties, Fragment } from "react";
 import { Timeline as TimelineType } from "../timeline";
 
-export function Timeline({ timeline, maxValue = timeline.end, style = {} }: { timeline: TimelineType, maxValue?: number, style?: CSSProperties }) {
+export function Timeline({ timeline, maxValue = timeline.end, gridlines = 0, style = {} }: { timeline: TimelineType, maxValue?: number, gridlines?: number; style?: CSSProperties }) {
     const GUTTER_WIDTH = 20
     const GUTTER_TOP = timeline.title ? 28 : 0
     const GUTTER_BOTTOM = 6
@@ -24,6 +24,10 @@ export function Timeline({ timeline, maxValue = timeline.end, style = {} }: { ti
 
     const blockEventsHeight = blockEvents.length * (EVENT_HEIGHT + EVENT_SPACING)
 
+    const gridlineValues = gridlines > 0 ? Array.from({ length: Math.ceil((maxValue - timeline.start) / gridlines) }).map((_, i) => timeline.start - (timeline.start % gridlines) + i * gridlines) : []
+
+    const gridlinesPath = gridlineValues.map(v => `M ${(v - timeline.start) * TIME_SCALE} 0 V ${blockEventsHeight}`).join(" ")
+
     return (
         <svg viewBox={`${-GUTTER_WIDTH} ${-GUTTER_TOP} ${width + GUTTER_WIDTH} ${height}`} style={{ width, height, ...style }}>
             <defs>
@@ -44,6 +48,7 @@ export function Timeline({ timeline, maxValue = timeline.end, style = {} }: { ti
                 }
             </defs>
             {timeline.title && <text y={-8} fontSize={20}>{timeline.title}</text>}
+            {gridlinesPath.length > 0 && <path d={gridlinesPath} fill="none" stroke="grey" strokeDasharray={"4 4"} />}
             <path d={`M -1 0 V ${blockEventsHeight} H ${width}`} fill="none" stroke="black" />
             {
                 blockEvents.map((event, i) => {
